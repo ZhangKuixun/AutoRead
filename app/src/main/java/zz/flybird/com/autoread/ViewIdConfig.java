@@ -17,5 +17,6 @@ public interface ViewIdConfig {
     String home_recyclerview_item_hot_item = "com.sohu.infonews:id/hot_item";
 
     String detail_coordinatorLayout = "com.sohu.infonews:id/fc_coordinatorLayout";
+    String detail_body = "com.sohu.infonews:id/body";
 
 }
