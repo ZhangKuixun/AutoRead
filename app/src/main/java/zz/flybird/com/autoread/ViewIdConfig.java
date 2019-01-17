@@ -18,5 +18,6 @@ public interface ViewIdConfig {
 
     String detail_coordinatorLayout = "com.sohu.infonews:id/fc_coordinatorLayout";
     String detail_body = "com.sohu.infonews:id/body";
+    String detail_webview = "com.sohu.infonews:id/webview_content";
 
 }

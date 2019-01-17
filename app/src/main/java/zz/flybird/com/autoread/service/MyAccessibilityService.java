@@ -2,14 +2,20 @@ package zz.flybird.com.autoread.service;
 
 import android.accessibilityservice.AccessibilityService;
 import android.os.Build;
+import android.support.annotation.RequiresApi;
+import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import java.io.DataOutputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 import zz.flybird.com.autoread.ViewIdConfig;
+import zz.flybird.com.autoread.util.ADBUtil;
 import zz.flybird.com.autoread.util.LogUtils;
 import zz.flybird.com.autoread.util.OperationHelper;
+import zz.flybird.com.autoread.util.UIUtil;
 
 /**
  * @Author admin
@@ -30,7 +36,7 @@ public class MyAccessibilityService extends AccessibilityService {
         String className = event.getClassName().toString();
         String s = AccessibilityEvent.eventTypeToString(eventType);
         LogUtils.e("onAccessibilityEvent className:" + className);
-//        LogUtils.e("onAccessibilityEvent eventTypeToString:" + "\neventType:" + s);
+        LogUtils.e("onAccessibilityEvent eventTypeToString:" + "\neventType:" + s);
 
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             AccessibilityNodeInfo rootNodeInfo = getRootInActiveWindow();
@@ -64,53 +70,93 @@ public class MyAccessibilityService extends AccessibilityService {
                     }
                     AccessibilityNodeInfo detailInfo = getRootInActiveWindow();
                     //找到id为 body的LinearLayout
-                    List<AccessibilityNodeInfo> bodyNodeInfos = OperationHelper.findViewById(detailInfo, ViewIdConfig.detail_body);
-                    if (bodyNodeInfos != null && !bodyNodeInfos.isEmpty()) {
-                        LogUtils.e("详情" + bodyNodeInfos.size());
-                        LogUtils.e("详情" + bodyNodeInfos.get(0).getClassName() + "是否可滚动" + bodyNodeInfos.get(0).isScrollable());
-                        int childCount = bodyNodeInfos.get(0).getChildCount();
-                        if (childCount <= 0) {
-                            return;
-                        }
-                        //找到body下的可滚动的webView  即scrollable=true
-                        for (int i = 0; i < childCount; i++) {
-                            LogUtils.e("详情body" + bodyNodeInfos.get(0).getChild(i).getClassName() + "&&&" + bodyNodeInfos.get(0).getChild(i).isScrollable());
-                            //找到外层的webView
-                            if (bodyNodeInfos.get(0).getChild(i).getClassName().toString().contains("android.webkit.WebView")) {
-                                LogUtils.e("外层是否可滑动" + bodyNodeInfos.get(0).getChild(i).getClassName() + "@@@" + bodyNodeInfos.get(0).getChild(i).isScrollable());
-                                if (bodyNodeInfos.get(0).getChild(i).getChildCount() > 0) {
-                                    //找到内层的webView
-                                    CharSequence className1 = bodyNodeInfos.get(0).getChild(i).getChild(0).getClassName();
-                                    boolean scrollable = bodyNodeInfos.get(0).getChild(i).getChild(0).isScrollable();
-                                    LogUtils.e("内层" + className1 + ">>>" + scrollable);
-                                    if (scrollable) {
-                                        LogUtils.e("开始滑动");
-                                        bodyNodeInfos.get(0).getChild(i).getChild(0).performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
-                                        try {
-                                            Thread.sleep(1000);
-                                        } catch (InterruptedException e) {
-                                            e.printStackTrace();
-                                        }
-                                        bodyNodeInfos.get(0).getChild(i).getChild(0).performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
-                                    }
+//                    findBodyLayout(detailInfo);
+                    //查找webView
+                    findWebView(detailInfo);
 
-                                } else {
-                                    LogUtils.e("未找到内层webview");
-                                }
 
-                                break;
-                            }
-                        }
+                    //find CoordinatorLayout
+//                    findCoordinatorLayout(detailInfo);
 
+
+                } else if (className.contains("com.jifen.qukan")) {
+                    AccessibilityNodeInfo detailInfo = getRootInActiveWindow();
+
+                    List<AccessibilityNodeInfo> scrollNodes = detailInfo.findAccessibilityNodeInfosByViewId("com.jifen.qukan:id/aqz");
+                    if (scrollNodes != null && !scrollNodes.isEmpty()) {
+                        LogUtils.e("趣头条 详情" + scrollNodes.size());
                     } else {
-                        LogUtils.e("body 为空");
+                        LogUtils.e("趣头条 详情 scrollNode 为空");
                     }
+
+//                    ADBUtil.perforGlobalSwipe(0, 0, 300, 300);
+                    //从一个点 滑动到另一个点
+
+                    ScrollScreen(1500);
+//                    ADBUtil.perforGlobalSwipe(300, 300, 300, 700);
+
                 }
 
             } else {
                 LogUtils.e("rootNodeInfo为null");
 
             }
+        }
+    }
+
+    private void ScrollScreen(long interval) {
+        int screenHeight = UIUtil.getScreenHeight(this);
+        int screenWidth = UIUtil.getScreenWidth(this);
+        LogUtils.e("趣头条 详情 screenHeight" + screenHeight + "screenWidth:" + screenWidth);
+//        ADBUtil.perforGlobalSwipe(0, screenHeight, 0, 300);
+//        LogUtils.e("趣头条 详情 滑动1");
+
+//        for (; ; ) {
+
+//            ADBUtil.perforGlobalSwipe(0, 500, 0, 0);
+//            LogUtils.e("趣头条 详情 滑动2");
+//        }
+
+        ADBUtil.perforGlobalSwipe(0, 500, 0, 0);
+        try {
+            Thread.sleep(interval);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        ADBUtil.perforGlobalSwipe(0, 500, 0, 0);
+        try {
+            Thread.sleep(interval);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        ADBUtil.perforGlobalSwipe(0, 500, 0, 0);
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private void findWebView(AccessibilityNodeInfo detailInfo) {
+        List<AccessibilityNodeInfo> webViews = detailInfo.findAccessibilityNodeInfosByViewId(ViewIdConfig.detail_webview);
+        if (webViews != null && !webViews.isEmpty()) {
+            LogUtils.e("webViews不为空" + webViews.size());
+            AccessibilityNodeInfo webViewInfo = webViews.get(0);
+            if (webViewInfo.getChildCount() > 0) {
+                AccessibilityNodeInfo childWebViewInfo = webViewInfo.getChild(0);
+                LogUtils.e("childWebViewInfo" + childWebViewInfo.getClassName() + childWebViewInfo.isScrollable());
+                if (childWebViewInfo.isScrollable()) {
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    LogUtils.e("执行滑动代码");
+                    childWebViewInfo.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
+                    childWebViewInfo.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
+                }
+
+            }
+
+        } else {
+            LogUtils.e("webViews为空");
         }
     }
 
@@ -132,16 +178,4 @@ public class MyAccessibilityService extends AccessibilityService {
         }
     }
 
-    private void chooseScrollbleView(AccessibilityNodeInfo info) {
-        if (info.isScrollable()) {
-            LogUtils.e("可以滑动:" + info.getClassName());
-        } else {
-            LogUtils.e("不可滑动:" + info.getClassName());
-            if (info.getParent() != null) {
-                AccessibilityNodeInfo parent = info.getParent();
-                chooseScrollbleView(parent);
-            }
-        }
-
-    }
 }
