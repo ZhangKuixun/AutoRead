@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:accessibilityEventTypes="typeWindowStateChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:accessibilityFlags="flagDefault"
     android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_description"
     android:notificationTimeout="100"
-    android:packageNames="com.sohu.infonews,com.jifen.qukan" />
+    android:canPerformGestures="true"
+    android:canRequestTouchExplorationMode="true"
+    android:canRequestEnhancedWebAccessibility="true"
+    android:packageNames="com.sohu.infonews,com.jifen.qukan,com.songheng.eastnews"
+    tools:targetApi="n" />

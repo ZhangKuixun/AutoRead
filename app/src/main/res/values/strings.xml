@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">AutoRead</string>
-    <string name="accessibility_description">搜狐资讯自动阅读辅助工具</string>
+    <string name="accessibility_description">阅读辅助工具</string>
 </resources>

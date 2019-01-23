@@ -6,6 +6,7 @@ package zz.flybird.com.autoread;
  * Desc:AutoRead
  */
 public interface ViewIdConfig {
+    //搜狐资讯
     String home_tab_id = "com.sohu.infonews:id/tab_bar";
     String home_viewpager_id = "com.sohu.infonews:id/article_viewpager";
     String home_recyclerview_id = "com.sohu.infonews:id/mRecyclerView";
@@ -20,4 +21,10 @@ public interface ViewIdConfig {
     String detail_body = "com.sohu.infonews:id/body";
     String detail_webview = "com.sohu.infonews:id/webview_content";
 
+    //东方头条
+    String east_package = "com.songheng.eastnews";
+    String east_content_id = "com.songheng.eastnews:id/lo";
+    //惠头条
+    //中青看点
+    //牛牛头条
 }
