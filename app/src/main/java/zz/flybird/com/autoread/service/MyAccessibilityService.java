@@ -24,6 +24,8 @@ import zz.flybird.com.autoread.util.UIUtil;
  */
 public class MyAccessibilityService extends AccessibilityService {
     private List<String> sohuNewsHistory = new ArrayList<>();
+    private List<String> ttddHistory = new ArrayList<>();
+    private List<String> newsList = new ArrayList<>();
 
     @Override
     protected void onServiceConnected() {
@@ -39,7 +41,11 @@ public class MyAccessibilityService extends AccessibilityService {
         String s = AccessibilityEvent.eventTypeToString(eventType);
         LogUtils.e("onAccessibilityEvent className:" + className);
         LogUtils.e("onAccessibilityEvent eventTypeToString:" + "\neventType:" + s);
-
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             AccessibilityNodeInfo rootNodeInfo = getRootInActiveWindow();
             if (rootNodeInfo != null) {
@@ -60,21 +66,43 @@ public class MyAccessibilityService extends AccessibilityService {
                             // 标题textView clickable为False  获取其parent LinearLayout clickable 为true
                             //遍历列表  点击进入
 //                            setItemClickAction(itemTitles.get(0));
+                            LogUtils.e("recyclerView Item Count " + itemText.size());
                             try {
                                 Thread.sleep(1500);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-
                             for (int i = 0; i < itemText.size(); i++) {
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
                                 if (!sohuNewsHistory.contains(itemText.get(i).getText().toString())) {
                                     LogUtils.e("添加阅读历史 文章标题:" + itemText.get(i).getText().toString());
                                     sohuNewsHistory.add(itemText.get(i).getText().toString());
                                     setItemClickAction(itemText.get(i));
+                                    break;
                                 } else {
-                                    LogUtils.e("已阅读" + itemText.get(i).getText().toString());
+                                    LogUtils.e("已阅读过" + "position" + i);
+                                    if (i > 1) {
+                                        recyclerView.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
+                                        setItemClickAction(itemText.get(i));
+                                    }
+//                                    if (i == itemText.size()) {
+//                                        LogUtils.e("已到最后一条");
+//                                        recyclerView.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
+//                                        try {
+//                                            Thread.sleep(1000);
+//                                        } catch (InterruptedException e) {
+//                                            e.printStackTrace();
+//                                        }
+//                                        setItemClickAction(itemText.get(i));
+//                                    }
                                 }
-                                recyclerView.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
+                                //到最后一个
+
+                                LogUtils.e(itemText.get(i).getText().toString() + "'");
                             }
 
                         } else {
@@ -84,6 +112,7 @@ public class MyAccessibilityService extends AccessibilityService {
                 } else if (className.contains("com.sohu.quicknews.articleModel.activity.DetailActivity")) {
                     LogUtils.e("搜狐资讯 详情");
                     ScrollScreen(2000, 20 * 1000);
+
                 } else if (className.contains("com.jifen.qukan")) {
 
                     AccessibilityNodeInfo detailInfo = getRootInActiveWindow();
@@ -95,23 +124,81 @@ public class MyAccessibilityService extends AccessibilityService {
                         LogUtils.e("趣头条 详情 scrollNode 为空");
                     }
 
-
                 } else if (className.contains("com.songheng.eastfirst.business.newsdetail.view.activity.NewsDetailH5Activity")) {
                     LogUtils.e("东方头条 详情");
 
 //                    ScrollScreen(200, 2 * 60 * 1000);
+                } else if (className.contains(ViewIdConfig.htt_home_class_name)) {
+                    LogUtils.e("惠头条 新闻列表");
+
+                } else if (className.contains(ViewIdConfig.htt_detail_class_name)) {
+                    LogUtils.e("惠头条 新闻详情");
+                    ScrollScreen(2000, 20 * 1000);
+
+                } else if (className.contains(ViewIdConfig.ttdd_news_list)) {
+                    LogUtils.e("头条多多 新闻列表");
+                    List<AccessibilityNodeInfo> recyclerViews = OperationHelper.findViewById(rootNodeInfo, ViewIdConfig.ttdd_news_list_recyclerview);
+                    LogUtils.e("头条多多 新闻列表 recyclerViews" + recyclerViews.size());
+                    if (!recyclerViews.isEmpty()) {
+                        AccessibilityNodeInfo recyclerView = recyclerViews.get(0);
+                        List<AccessibilityNodeInfo> frameLayouts = recyclerView.findAccessibilityNodeInfosByViewId("com.lite.infoflow.browser:id/va");
+                        LogUtils.e("头条多多 新闻列表 frameLayouts" + frameLayouts.size());
+                        List<AccessibilityNodeInfo> titleTexts = recyclerView.findAccessibilityNodeInfosByViewId(ViewIdConfig.ttdd_item_title);
+                        LogUtils.e("头条多多 新闻列表 titleTexts" + titleTexts.size());
+                        if (!titleTexts.isEmpty()) {
+                            for (int i = 0; i < titleTexts.size(); i++) {
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                if (!ttddHistory.contains(titleTexts.get(i).getText().toString())) {
+                                    LogUtils.e("添加 惠头条阅读历史 文章标题:" + titleTexts.get(i).getText().toString());
+                                    ttddHistory.add(titleTexts.get(i).getText().toString());
+                                    setItemClickAction(titleTexts.get(i));
+                                    break;
+                                } else {
+                                    LogUtils.e("已阅读过" + "position" + i);
+                                    if (i > 1) {
+                                        recyclerView.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
+                                        setItemClickAction(titleTexts.get(i));
+                                    }
+                                }
+                                //到最后一个
+                                LogUtils.e(titleTexts.get(i).getText().toString() + "'");
+                            }
+
+                        }
+                    } else {
+
+                    }
+
+                } else if (className.contains(ViewIdConfig.ttdd_news_detail)) {
+                    LogUtils.e("头条多多 新闻详情");
+
+                } else {
+                    LogUtils.e("className" + className);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
                 }
 
             } else {
                 LogUtils.e("rootNodeInfo为null");
-
-
             }
         }
     }
 
     @TargetApi(Build.VERSION_CODES.N)
     private void ScrollScreen(long interval, long duration) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         long stayTime = 0;
         while (stayTime < duration) {
             try {
@@ -119,7 +206,7 @@ public class MyAccessibilityService extends AccessibilityService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            slideVertical(9, 5);
+            slideVertical(15, 10);
             stayTime = interval + stayTime;
         }
         LogUtils.e("关闭详情页");
@@ -138,9 +225,16 @@ public class MyAccessibilityService extends AccessibilityService {
     }
 
 
+    @TargetApi(Build.VERSION_CODES.N)
     private void setItemClickAction(AccessibilityNodeInfo info) {
+        if (info == null) {
+            LogUtils.e("设置点击 info为空");
+//            clickScreen(10, 10);
+            return;
+        }
         LogUtils.e("设置点击" + info.getClassName() + "IsClick" + info.isClickable());
         if (info.isClickable() && info.getClassName().equals("android.widget.LinearLayout")) {
+            LogUtils.e("点击进入详情页");
             info.performAction(AccessibilityNodeInfo.ACTION_CLICK);
         } else {
             LogUtils.e(info.getClassName() + "不可点击,查找父布局");
@@ -160,7 +254,6 @@ public class MyAccessibilityService extends AccessibilityService {
         int screenWidth = UIUtil.getScreenWidth(getApplicationContext());
         LogUtils.e("屏幕：" + (screenHeight - (screenHeight / 10)) + "/" +
                 (screenHeight - (screenHeight - (screenHeight / 10))) + "/" + screenWidth / 2);
-
         Path path = new Path();
         int start = (screenHeight / 20) * startSlideRatio;
         int stop = (screenHeight / 20) * stopSlideRatio;
@@ -197,7 +290,7 @@ public class MyAccessibilityService extends AccessibilityService {
      * 点击屏幕
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void clickScreen(final int next, final long nextTime, int xRatio, int yRatio) {
+    public void clickScreen(int xRatio, int yRatio) {
         int screenHeight = UIUtil.getScreenHeight(getApplicationContext());
         int screenWidth = UIUtil.getScreenWidth(getApplicationContext());
         int y = (screenHeight / 20) * yRatio;
