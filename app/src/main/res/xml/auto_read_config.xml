@@ -4,11 +4,22 @@
     android:accessibilityEventTypes="typeWindowStateChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:accessibilityFlags="flagDefault"
+    android:canPerformGestures="true"
+    android:canRequestEnhancedWebAccessibility="true"
+    android:canRequestTouchExplorationMode="true"
     android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_description"
     android:notificationTimeout="100"
-    android:canPerformGestures="true"
-    android:canRequestTouchExplorationMode="true"
-    android:canRequestEnhancedWebAccessibility="true"
-    android:packageNames="com.sohu.infonews,com.jifen.qukan,com.songheng.eastnews"
+    android:packageNames="com.sohu.infonews,
+                          com.songheng.eastnews,
+                          com.cashtoutiao,
+                          com.huolea.bull,
+                          com.lite.infoflow,
+                          cn.weli.story,
+                          cn.youth.news,
+                          com.zhizhang.lxk,
+                          com.ss.android.article.lite"
     tools:targetApi="n" />
+
+    <!--com.jifen.qukan, 趣头条 -->
+
