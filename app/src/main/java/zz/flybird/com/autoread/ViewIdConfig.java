@@ -57,7 +57,7 @@ public interface ViewIdConfig {
     String ttdd_package = "com.lite.infoflow";
     String ttdd_splash = "com.lite.infoflow.launcher.LauncherActivity";
     String ttdd_news_list = "com.ttdd.contents.BrowserActivity";
-    String ttdd_news_list_recyclerview = "com.lite.infoflow.browser:id/po";
+    String ttdd_news_list_recyclerview = "com.lite.infoflow.browser:id/pp";
     String ttdd_item_title = "com.lite.infoflow.browser:id/0x7f100193";
     String ttdd_news_detail = "com.ttdd.contents.BrowserActivity";
 

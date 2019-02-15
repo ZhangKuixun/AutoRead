@@ -32,8 +32,6 @@ public class MyAccessibilityService extends AccessibilityService {
         LogUtils.e("onServiceConnected");
     }
 
-    @TargetApi(Build.VERSION_CODES.N)
-    @android.support.annotation.RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         int eventType = event.getEventType();
@@ -42,7 +40,7 @@ public class MyAccessibilityService extends AccessibilityService {
         LogUtils.e("onAccessibilityEvent className:" + className);
         LogUtils.e("onAccessibilityEvent eventTypeToString:" + "\neventType:" + s);
         try {
-            Thread.sleep(3000);
+            Thread.sleep(6000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -137,40 +135,44 @@ public class MyAccessibilityService extends AccessibilityService {
 
                 } else if (className.contains(ViewIdConfig.ttdd_news_list)) {
                     LogUtils.e("头条多多 新闻列表");
-                    List<AccessibilityNodeInfo> recyclerViews = OperationHelper.findViewById(rootNodeInfo, ViewIdConfig.ttdd_news_list_recyclerview);
-                    LogUtils.e("头条多多 新闻列表 recyclerViews" + recyclerViews.size());
+                    List<AccessibilityNodeInfo> recyclerViews = rootNodeInfo.findAccessibilityNodeInfosByViewId("com.lite.infoflow.browser:id/pp");
+                    LogUtils.e("头条多多 新闻列表 recyclerViews " + recyclerViews.size());
                     if (!recyclerViews.isEmpty()) {
-                        AccessibilityNodeInfo recyclerView = recyclerViews.get(0);
-                        List<AccessibilityNodeInfo> frameLayouts = recyclerView.findAccessibilityNodeInfosByViewId("com.lite.infoflow.browser:id/va");
-                        LogUtils.e("头条多多 新闻列表 frameLayouts" + frameLayouts.size());
-                        List<AccessibilityNodeInfo> titleTexts = recyclerView.findAccessibilityNodeInfosByViewId(ViewIdConfig.ttdd_item_title);
-                        LogUtils.e("头条多多 新闻列表 titleTexts" + titleTexts.size());
-                        if (!titleTexts.isEmpty()) {
-                            for (int i = 0; i < titleTexts.size(); i++) {
-                                try {
-                                    Thread.sleep(1000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                if (!ttddHistory.contains(titleTexts.get(i).getText().toString())) {
-                                    LogUtils.e("添加 惠头条阅读历史 文章标题:" + titleTexts.get(i).getText().toString());
-                                    ttddHistory.add(titleTexts.get(i).getText().toString());
-                                    setItemClickAction(titleTexts.get(i));
-                                    break;
-                                } else {
-                                    LogUtils.e("已阅读过" + "position" + i);
-                                    if (i > 1) {
-                                        recyclerView.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
-                                        setItemClickAction(titleTexts.get(i));
+                        for (int i = 0; i < recyclerViews.size(); i++) {
+                            AccessibilityNodeInfo recyclerView = recyclerViews.get(i);
+                            if (recyclerView == null)
+                                continue;
+                            if (recyclerView.getChildCount() < 2)
+                                continue;
+                            List<AccessibilityNodeInfo> linearLayout = recyclerView.findAccessibilityNodeInfosByViewId("com.lite.infoflow.browser:id/va");
+                            LogUtils.e("头条多多 新闻列表 frameLayouts " + linearLayout.size());
+                            List<AccessibilityNodeInfo> titleTexts = recyclerView.findAccessibilityNodeInfosByViewId("com.lite.infoflow.browser:id/vc");
+                            LogUtils.e("头条多多 新闻列表 titleTexts " + titleTexts.size());
+                            if (!titleTexts.isEmpty()) {
+                                for (int j = 0; j < titleTexts.size(); j++) {
+                                    try {
+                                        Thread.sleep(1000);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
                                     }
+                                    if (!ttddHistory.contains(titleTexts.get(j).getText().toString())) {
+                                        LogUtils.e("添加 惠头条阅读历史 文章标题:" + titleTexts.get(j).getText().toString());
+                                        ttddHistory.add(titleTexts.get(j).getText().toString());
+                                        setItemClickAction(titleTexts.get(j));
+                                        break;
+                                    } else {
+                                        LogUtils.e("已阅读过" + "position" + j);
+                                        if (j > 1) {
+                                            recyclerView.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
+                                            setItemClickAction(titleTexts.get(j));
+                                        }
+                                    }
+                                    //到最后一个
+                                    LogUtils.e(titleTexts.get(j).getText().toString() + "'");
                                 }
-                                //到最后一个
-                                LogUtils.e(titleTexts.get(i).getText().toString() + "'");
+
                             }
-
                         }
-                    } else {
-
                     }
 
                 } else if (className.contains(ViewIdConfig.ttdd_news_detail)) {
@@ -192,7 +194,6 @@ public class MyAccessibilityService extends AccessibilityService {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.N)
     private void ScrollScreen(long interval, long duration) {
         try {
             Thread.sleep(1000);
@@ -248,7 +249,6 @@ public class MyAccessibilityService extends AccessibilityService {
      * 滑动
      * 滑动比例 0~20
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private void slideVertical(int startSlideRatio, int stopSlideRatio) {
         int screenHeight = UIUtil.getScreenHeight(getApplicationContext());
         int screenWidth = UIUtil.getScreenWidth(getApplicationContext());
@@ -261,28 +261,32 @@ public class MyAccessibilityService extends AccessibilityService {
         path.lineTo(screenWidth / 2, stop);//如果设置这句就是滑动
 //        path.moveTo(30, 400);
 //        path.lineTo(30, 100);
-        GestureDescription.Builder builder = new GestureDescription.Builder();
-        GestureDescription gestureDescription = builder
-                .addStroke(new GestureDescription.
-                        StrokeDescription(path,
-                        200,
-                        200))
-                .build();
-        dispatchGesture(gestureDescription, new GestureResultCallback() {
-            @Override
-            public void onCompleted(GestureDescription gestureDescription) {
-                super.onCompleted(gestureDescription);
-                LogUtils.e("滑动结束" + gestureDescription.getStrokeCount());
-            }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            GestureDescription.Builder builder = new GestureDescription.Builder();
+            GestureDescription gestureDescription = builder
+                    .addStroke(new GestureDescription.
+                            StrokeDescription(path,
+                            200,
+                            200))
+                    .build();
+            dispatchGesture(gestureDescription, new GestureResultCallback() {
+                @Override
+                public void onCompleted(GestureDescription gestureDescription) {
+                    super.onCompleted(gestureDescription);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        LogUtils.e("滑动结束" + gestureDescription.getStrokeCount());
+                    }
+                }
 
-            @Override
-            public void onCancelled(GestureDescription gestureDescription) {
-                super.onCancelled(gestureDescription);
-                LogUtils.e("滑动取消");
+                @Override
+                public void onCancelled(GestureDescription gestureDescription) {
+                    super.onCancelled(gestureDescription);
+                    LogUtils.e("滑动取消");
 //                performGlobalAction(GESTURE_SWIPE_UP);
 //                performGlobalAction(GESTURE_SWIPE_UP);
-            }
-        }, null);
+                }
+            }, null);
+        }
     }
 
 

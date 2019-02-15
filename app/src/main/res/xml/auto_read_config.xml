@@ -18,7 +18,8 @@
                           cn.weli.story,
                           cn.youth.news,
                           com.zhizhang.lxk,
-                          com.ss.android.article.lite"
+                          com.ss.android.article.lite,
+                          com.jifen.qukan"
     tools:targetApi="n" />
 
     <!--com.jifen.qukan, 趣头条 -->
